@@ -204,8 +204,11 @@ void* media_object::_source_entry_point()
         }
         catch( exception& ex )
         {
-            if( _continueOnError == false )
+ 	    if( _continueOnError == false )
+	    {
+  	        CK_LOG_NOTICE("%s",ex.what());
                 _errorState = true;
+	    }
         }
 
         if( _running && gotav_packet && !_errorState )
