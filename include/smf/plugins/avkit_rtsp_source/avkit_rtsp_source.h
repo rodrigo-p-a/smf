@@ -11,7 +11,8 @@
 
 class avkit_rtsp_source_test;
 
-using namespace smf;
+namespace smf
+{
 
 class avkit_rtsp_source : public source
 {
@@ -41,5 +42,7 @@ private:
     bool _demuxCBFired;
     bool _firstKey;
 };
+
+}
 
 #endif
