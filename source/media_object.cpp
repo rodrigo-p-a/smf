@@ -152,6 +152,7 @@ void media_object::_enqueue( shared_ptr<av_packet> pkt )
         _inputQueue.push_back( pkt );
         _queueCond.notify_one();
     }
+    else CK_LOG_NOTICE("REMOVE ME: DROPPAGE in media_object.");
 }
 
 void* media_object::_default_entry_point()

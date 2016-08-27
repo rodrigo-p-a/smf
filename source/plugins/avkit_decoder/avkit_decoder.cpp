@@ -15,7 +15,8 @@ avkit_decoder::avkit_decoder() :
     _inputHeight( 0 ),
     _requestedWidth( 0 ),
     _requestedHeight( 0 ),
-    _configLok()
+    _configLok(),
+    _decodeAttempts(16)
 {
 }
 
@@ -75,10 +76,13 @@ void avkit_decoder::commit_params()
     _requestedWidth = _params["width"].to_uint16();
     _requestedHeight = _params["height"].to_uint16();
 
+    if( _params.find("decode_attempts") != _params.end() )
+        _decodeAttempts = _params["decode_attempts"].to_int();
+
     _inputWidth = 0; // trigger a reconfig on the next frame...
 }
 
 void avkit_decoder::init_from_demuxer( avkit::av_demuxer& demuxer )
 {
-    _decoder = make_shared<h264_decoder>( demuxer, get_normal_h264_decoder_options() );
+    _decoder = make_shared<h264_decoder>( demuxer, get_normal_h264_decoder_options(), _decodeAttempts );
 }
