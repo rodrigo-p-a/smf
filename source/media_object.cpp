@@ -20,7 +20,6 @@ media_object::media_object() :
     _filter(),
     _source(),
     _errorState( false ),
-    _continueOnError( false ),
     _thread()
 {
 }
@@ -99,9 +98,7 @@ void media_object::write( shared_ptr<av_packet> pkt )
         }
         catch( exception& ex )
         {
-            if( _continueOnError == false )
-                _errorState = true;
-
+            _errorState = true;
             CK_LOG_ERROR( "%s", ex.what() );
         }
     }
@@ -205,11 +202,8 @@ void* media_object::_source_entry_point()
         }
         catch( exception& ex )
         {
- 	    if( _continueOnError == false )
-	    {
-  	        CK_LOG_NOTICE("%s",ex.what());
-                _errorState = true;
-	    }
+            CK_LOG_NOTICE("%s",ex.what());
+            _errorState = true;
         }
 
         if( _running && gotav_packet && !_errorState )

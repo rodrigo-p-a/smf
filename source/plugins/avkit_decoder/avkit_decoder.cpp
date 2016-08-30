@@ -8,6 +8,8 @@ using namespace cppkit;
 using namespace avkit;
 using namespace std;
 
+static const int DROPPED_HEALTHY_THRESHOLD = 2;
+
 avkit_decoder::avkit_decoder() :
     _decoder(),
     _params(),
@@ -16,7 +18,9 @@ avkit_decoder::avkit_decoder() :
     _requestedWidth( 0 ),
     _requestedHeight( 0 ),
     _configLok(),
-    _decodeAttempts(16)
+    _decodeAttempts(16),
+    _droppedFrames(0),
+    _processedFrames(0)
 {
 }
 
@@ -26,12 +30,37 @@ avkit_decoder::~avkit_decoder() noexcept
 
 shared_ptr<av_packet> avkit_decoder::process( shared_ptr<av_packet> pkt )
 {
+    ++_processedFrames;
+
     if( !_decoder )
         _decoder = make_shared<h264_decoder>( get_normal_h264_decoder_options() );
 
     unique_lock<recursive_mutex> g(_configLok);
 
-    _decoder->decode( pkt );
+    try
+    {
+        _decoder->decode( pkt );
+
+        if( _processedFrames % 50 == 0 )
+        {
+            if( _droppedFrames > 0 )
+            {
+                CK_LOG_NOTICE("decrementing dropped frame count...");
+                --_droppedFrames;
+            }
+        }
+    }
+    catch(exception& ex)
+    {
+        ++_droppedFrames;
+        CK_LOG_NOTICE("incrementing dropped frame count due to: %s",ex.what());
+    }
+
+    if( _droppedFrames > DROPPED_HEALTHY_THRESHOLD )
+    {
+        CK_LOG_NOTICE("Too many dropped frames!");
+        CK_THROW(("Too many dropped frames!"));
+    }
 
     if( _inputWidth != _decoder->get_input_width() || _inputHeight != _decoder->get_input_height() )
     {

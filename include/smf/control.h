@@ -34,7 +34,7 @@ public:
 
     CK_API void add_media_object( const cppkit::ck_string& key, std::shared_ptr<media_object> mo );
 
-    CK_API void set_continue_on_error( const cppkit::ck_string& key, bool continueOnError );
+    CK_API bool healthy() const;
 
 private:
     std::map<std::string,std::shared_ptr<media_object> > _elementIndex;

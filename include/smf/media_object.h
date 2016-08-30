@@ -27,6 +27,8 @@ public:
     CK_API void set_param( const cppkit::ck_string& name, const cppkit::ck_string& val );
     CK_API void commit_params();
 
+    CK_API bool healthy() const { return !_errorState; }
+
     CK_API void write( std::shared_ptr<avkit::av_packet> pkt );
 
     CK_API void set_source( std::shared_ptr<source> source ) { _source = source; }
@@ -36,9 +38,6 @@ public:
     CK_API void connect( std::shared_ptr<media_object> next ) { _next.push_back( next ); }
 
     CK_API void attach_filter( std::shared_ptr<filter> filter ) { _filter = filter; }
-
-    CK_API bool get_continue_on_error() const { return _continueOnError; }
-    CK_API void set_continue_on_error( bool continueOnError ) { _continueOnError = continueOnError; }
 
     CK_API virtual void* entry_point();
 
@@ -65,7 +64,6 @@ private:
     std::shared_ptr<filter> _filter;
     std::shared_ptr<source> _source;
     bool _errorState;
-    bool _continueOnError;
     std::thread _thread;
 };
 

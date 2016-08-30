@@ -70,7 +70,13 @@ void control::add_media_object( const ck_string& key, shared_ptr<media_object> m
     _elements.push_back( mo );
 }
 
-void control::set_continue_on_error( const cppkit::ck_string& key, bool continueOnError )
+bool control::healthy() const
 {
-    _elementIndex[key]->set_continue_on_error( continueOnError );
+    bool healthy = true;
+    for( auto& mo : _elements )
+    {
+        if( !mo->healthy() )
+            healthy = false;
+    }
+    return healthy;
 }

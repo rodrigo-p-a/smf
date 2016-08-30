@@ -34,6 +34,8 @@ private:
     uint16_t _requestedHeight;
     std::recursive_mutex _configLok;
     int _decodeAttempts;
+    int _droppedFrames;
+    uint64_t _processedFrames;
 };
 
 }
