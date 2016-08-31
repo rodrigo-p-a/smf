@@ -99,7 +99,7 @@ void media_object::write( shared_ptr<av_packet> pkt )
         catch( exception& ex )
         {
             _errorState = true;
-            CK_LOG_ERROR( "%s", ex.what() );
+            CK_LOG_ERROR( "MEDIA_OBJECT: %s", ex.what() );
         }
     }
 
@@ -113,7 +113,7 @@ void media_object::write( shared_ptr<av_packet> pkt )
 
 void media_object::_enqueue( shared_ptr<av_packet> pkt )
 {
-    if( !_running )
+    if( !_running || _errorState )
         return;
 
     unique_lock<recursive_mutex> prodGuard( _producerLock );
