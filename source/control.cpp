@@ -12,7 +12,7 @@ control::control() :
 {
 }
 
-control::~control() noexcept
+control::~control() throw()
 {
     stop();
 }

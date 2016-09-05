@@ -18,7 +18,7 @@ class control : public stateful
 {
 public:
     CK_API control();
-    CK_API virtual ~control() noexcept;
+    CK_API virtual ~control() throw();
 
     CK_API virtual void run();
     CK_API virtual void stop();

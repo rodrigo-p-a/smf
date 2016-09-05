@@ -16,7 +16,7 @@ class avkit_decoder final : public filter
 {
 public:
     CK_API avkit_decoder();
-    CK_API virtual ~avkit_decoder() noexcept;
+    CK_API virtual ~avkit_decoder() throw();
 
     CK_API virtual std::shared_ptr<avkit::av_packet> process( std::shared_ptr<avkit::av_packet> pkt );
 

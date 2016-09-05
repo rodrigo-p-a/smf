@@ -66,7 +66,7 @@ class filter : public stateful
 {
 public:
     CK_API filter() = default;
-    CK_API virtual ~filter() noexcept {}
+    CK_API virtual ~filter() throw() {}
 
     CK_API virtual std::shared_ptr<avkit::av_packet> process( std::shared_ptr<avkit::av_packet> pkt ) = 0;
 

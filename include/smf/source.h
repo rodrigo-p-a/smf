@@ -16,7 +16,7 @@ class source : public stateful
 {
 public:
     CK_API source() = default;
-    CK_API virtual ~source() noexcept {}
+    CK_API virtual ~source() throw() {}
 
     CK_API virtual bool get( std::shared_ptr<avkit::av_packet>& pkt ) = 0;
 

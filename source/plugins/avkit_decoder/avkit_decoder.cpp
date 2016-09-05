@@ -22,7 +22,7 @@ avkit_decoder::avkit_decoder() :
 {
 }
 
-avkit_decoder::~avkit_decoder() noexcept
+avkit_decoder::~avkit_decoder() throw()
 {
 }
 

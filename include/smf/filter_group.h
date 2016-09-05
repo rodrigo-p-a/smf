@@ -15,7 +15,7 @@ class filter_group : public filter
 {
 public:
     CK_API filter_group() = default;
-    CK_API virtual ~filter_group() noexcept {}
+    CK_API virtual ~filter_group() throw() {}
 
     CK_API void add( std::shared_ptr<filter> filter ) { _filters.push_back( filter ); }
 

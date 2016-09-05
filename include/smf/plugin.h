@@ -15,7 +15,7 @@ class plugin
 {
 public:
     CK_API plugin();
-    CK_API virtual ~plugin() noexcept;
+    CK_API virtual ~plugin() throw();
 
     CK_API virtual std::list<cppkit::ck_string> get_source_names() = 0;
     CK_API virtual std::list<cppkit::ck_string> get_filter_names() = 0;

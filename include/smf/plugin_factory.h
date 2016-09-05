@@ -15,7 +15,7 @@ class plugin_factory
 {
 public:
     CK_API plugin_factory( const cppkit::ck_string& pluginDir );
-    CK_API virtual ~plugin_factory() noexcept {}
+    CK_API virtual ~plugin_factory() throw() {}
 
     CK_API std::shared_ptr<source> create_source( const cppkit::ck_string& name );
     CK_API std::shared_ptr<filter> create_filter( const cppkit::ck_string& name );

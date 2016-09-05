@@ -19,7 +19,7 @@ class media_object : public stateful
 {
 public:
     CK_API media_object();
-    CK_API virtual ~media_object() noexcept {}
+    CK_API virtual ~media_object() throw() {}
 
     CK_API virtual void run();
     CK_API virtual void stop();

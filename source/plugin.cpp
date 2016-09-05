@@ -7,6 +7,6 @@ plugin::plugin()
 {
 }
 
-plugin::~plugin() noexcept
+plugin::~plugin() throw()
 {
 }
