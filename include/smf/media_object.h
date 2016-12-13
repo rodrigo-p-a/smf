@@ -38,6 +38,7 @@ public:
     CK_API void connect( std::shared_ptr<media_object> next ) { _next.push_back( next ); }
 
     CK_API void attach_filter( std::shared_ptr<filter> filter ) { _filter = filter; }
+    CK_API std::shared_ptr<filter> get_filter() const { return _filter; }
 
     CK_API virtual void* entry_point();
 

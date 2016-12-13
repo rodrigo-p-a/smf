@@ -18,7 +18,8 @@ avkit_decoder::avkit_decoder() :
     _requestedWidth( 0 ),
     _requestedHeight( 0 ),
     _configLok(),
-    _decodeAttempts(16)
+    _decodeAttempts(16),
+    _dropTillNextKey(true)
 {
 }
 
@@ -28,38 +29,66 @@ avkit_decoder::~avkit_decoder() throw()
 
 shared_ptr<av_packet> avkit_decoder::process( shared_ptr<av_packet> pkt )
 {
+    bool wasDropTillNextKey = _dropTillNextKey;
+
+    if( _dropTillNextKey )
+    {
+        if( !pkt->is_key() )
+            return shared_ptr<av_packet>();
+        else _dropTillNextKey = false;
+    }
+
     if( !_decoder )
         _decoder = make_shared<h264_decoder>( get_normal_h264_decoder_options() );
 
     unique_lock<recursive_mutex> g(_configLok);
 
-    _decoder->decode( pkt );
-
-    if( _inputWidth != _decoder->get_input_width() || _inputHeight != _decoder->get_input_height() )
+    try
     {
-        _inputWidth = _decoder->get_input_width();
-        _inputHeight = _decoder->get_input_height();
+        _decoder->decode( pkt );
+    }
+    catch( ck_exception& ex )
+    {
+        // If we were dropping till next key and we get here it means that even
+        // the next key frame failed to decode. In that case, I rethrow the exception
+        // here so that the whole stream can be restarted.
+        if( wasDropTillNextKey )
+            throw(ex);
 
-        uint16_t destWidth = 0, destHeight = 0;
-
-        aspect_correct_dimensions( _inputWidth,
-                                   _inputHeight,
-                                   _requestedWidth,
-                                   _requestedHeight,
-                                   destWidth,
-                                   destHeight );
-
-        _decoder->set_output_width( destWidth );
-        _decoder->set_output_height( destHeight );
+        _dropTillNextKey = true;
     }
 
-    auto decoded = _decoder->get();
-    // mostly the md is migrated, but we are changing the size of the video here
-    // so set the dimensions.
-    decoded->migrate_md_from( *pkt );
-    decoded->set_width( _decoder->get_output_width() );
-    decoded->set_height( _decoder->get_output_height() );
-    return decoded;
+    if( !_dropTillNextKey )
+    {
+        if( _inputWidth != _decoder->get_input_width() || _inputHeight != _decoder->get_input_height() )
+        {
+            _inputWidth = _decoder->get_input_width();
+            _inputHeight = _decoder->get_input_height();
+
+            uint16_t destWidth = 0, destHeight = 0;
+
+            aspect_correct_dimensions( _inputWidth,
+                                       _inputHeight,
+                                       _requestedWidth,
+                                       _requestedHeight,
+                                       destWidth,
+                                       destHeight );
+
+            _decoder->set_output_width( destWidth );
+            _decoder->set_output_height( destHeight );
+        }
+
+        auto decoded = _decoder->get();
+        // mostly the md is migrated, but we are changing the size of the video here
+        // so set the dimensions.
+        decoded->migrate_md_from( *pkt );
+        decoded->set_width( _decoder->get_output_width() );
+        decoded->set_height( _decoder->get_output_height() );
+
+        return decoded;
+    }
+
+    return shared_ptr<av_packet>();
 }
 
 void avkit_decoder::set_param( const cppkit::ck_string& name, const cppkit::ck_string& val )

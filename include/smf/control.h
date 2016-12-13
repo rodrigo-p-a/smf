@@ -34,6 +34,8 @@ public:
 
     CK_API void add_media_object( const cppkit::ck_string& key, std::shared_ptr<media_object> mo );
 
+    CK_API std::shared_ptr<media_object> get_media_object( const cppkit::ck_string& key );
+
     CK_API bool healthy() const;
 
 private:

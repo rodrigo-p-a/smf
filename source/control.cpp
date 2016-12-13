@@ -70,6 +70,14 @@ void control::add_media_object( const ck_string& key, shared_ptr<media_object> m
     _elements.push_back( mo );
 }
 
+std::shared_ptr<media_object> control::get_media_object( const cppkit::ck_string& key )
+{
+    auto found = _elementIndex.find( key );
+    if( found == _elementIndex.end() )
+        CK_THROW(("Unable to file media object with name: %s",key.c_str()));
+    return found->second;
+}
+
 bool control::healthy() const
 {
     bool healthy = true;

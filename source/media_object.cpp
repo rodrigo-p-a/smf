@@ -11,7 +11,7 @@ media_object::media_object() :
     stateful(),
     _next(),
     _inputQueue(),
-    _queueLimit( 5 ),
+    _queueLimit( 10 ),
     _queueLock(),
     _queueCond(),
     _producerLock(),
@@ -103,7 +103,7 @@ void media_object::write( shared_ptr<av_packet> pkt )
         }
     }
 
-    if( !_next.empty() && !_errorState )
+    if( pkt && !_next.empty() && !_errorState )
     {
         list<shared_ptr<media_object> >::iterator i, sentry;
         for( i = _next.begin(), sentry = _next.end(); i != sentry; i++ )
@@ -149,7 +149,11 @@ void media_object::_enqueue( shared_ptr<av_packet> pkt )
         _inputQueue.push_back( pkt );
         _queueCond.notify_one();
     }
-    else CK_LOG_NOTICE("REMOVE ME: DROPPAGE in media_object.");
+    else
+    {
+        if( _running )
+            CK_LOG_NOTICE("REMOVE ME: DROPPAGE in media_object.");
+    }
 }
 
 void* media_object::_default_entry_point()
