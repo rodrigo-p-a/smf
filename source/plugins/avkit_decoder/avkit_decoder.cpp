@@ -19,6 +19,7 @@ avkit_decoder::avkit_decoder() :
     _requestedHeight( 0 ),
     _configLok(),
     _decodeAttempts(16),
+    _pictType(""),
     _dropTillNextKey(true)
 {
 }
@@ -39,7 +40,7 @@ shared_ptr<av_packet> avkit_decoder::process( shared_ptr<av_packet> pkt )
     }
 
     if( !_decoder )
-        _decoder = make_shared<h264_decoder>( get_normal_h264_decoder_options() );
+        _decoder = make_shared<h264_decoder>( (_pictType.empty()) ? get_normal_h264_decoder_options() : get_normal_h264_decoder_options(_pictType) );
 
     unique_lock<recursive_mutex> g(_configLok);
 
@@ -64,6 +65,12 @@ shared_ptr<av_packet> avkit_decoder::process( shared_ptr<av_packet> pkt )
         {
             _inputWidth = _decoder->get_input_width();
             _inputHeight = _decoder->get_input_height();
+
+            if( _requestedWidth == 0 )
+                _requestedWidth = _inputWidth;
+
+            if( _requestedHeight == 0 )
+                _requestedHeight = _inputHeight;
 
             uint16_t destWidth = 0, destHeight = 0;
 
@@ -104,11 +111,19 @@ void avkit_decoder::commit_params()
 {
     unique_lock<recursive_mutex> g(_configLok);
 
-    _requestedWidth = _params["width"].to_uint16();
-    _requestedHeight = _params["height"].to_uint16();
+    if( _params.find("width") != _params.end() )
+        _requestedWidth = _params["width"].to_uint16();
+    else _requestedWidth = 0;
+
+    if( _params.find("height") != _params.end() )
+        _requestedHeight = _params["height"].to_uint16();
+    else _requestedHeight = 0;
 
     if( _params.find("decode_attempts") != _params.end() )
         _decodeAttempts = _params["decode_attempts"].to_int();
+
+    if( _params.find("pict_type") != _params.end() )
+        _pictType = _params["pict_type"];
 
     _inputWidth = 0; // trigger a reconfig on the next frame...
 }

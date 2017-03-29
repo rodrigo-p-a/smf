@@ -34,6 +34,7 @@ private:
     uint16_t _requestedHeight;
     std::recursive_mutex _configLok;
     int _decodeAttempts;
+    cppkit::ck_string _pictType;
     bool _dropTillNextKey;
 };
 
