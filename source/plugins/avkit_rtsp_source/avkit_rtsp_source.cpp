@@ -15,7 +15,8 @@ avkit_rtsp_source::avkit_rtsp_source() :
     _params(),
     _running( false ),
     _demuxCBFired( false ),
-    _firstKey( false )
+    _firstKey( false ),
+    _keyFrameOnly( false )
 {
 }
 
@@ -55,8 +56,12 @@ bool avkit_rtsp_source::get( shared_ptr<av_packet>& pkt )
     int index = -1;
     bool gotVideoFrame = false;
 
-    while( _running && !gotVideoFrame && _demux->read_frame( index ) )
+    while( _running && !gotVideoFrame )
     {
+        bool readFrame = _demux->read_frame( index );
+        if( !readFrame )
+            CK_THROW(("Failed to read frame from RTSP source."));
+
         if( index != videoStream )
             continue;
 
@@ -66,6 +71,9 @@ bool avkit_rtsp_source::get( shared_ptr<av_packet>& pkt )
                 _firstKey = true;
             else continue;
         }
+
+        if( _keyFrameOnly && !_demux->is_key() )
+            continue;
 
         pkt = _demux->get();
         if( !_demuxCBFired )
@@ -95,4 +103,5 @@ void avkit_rtsp_source::set_param( const cppkit::ck_string& name, const cppkit::
 void avkit_rtsp_source::commit_params()
 {
     _rtspURL = _params["rtsp_url"];
+    _keyFrameOnly = (_params.find("key_frame_only") != _params.end()) ? true : false;
 }

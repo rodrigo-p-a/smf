@@ -41,6 +41,7 @@ private:
     bool _running;
     bool _demuxCBFired;
     bool _firstKey;
+    bool _keyFrameOnly;
 };
 
 }
