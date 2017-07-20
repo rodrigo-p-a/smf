@@ -83,7 +83,6 @@ bool avkit_rtsp_source::get( shared_ptr<av_packet>& pkt )
             _demuxCBFired = true;
         }
 
-        pkt->set_ts_freq( _clockRate.second );
         pkt->set_pts( _pts );
         pkt->set_dts( _pts );
         _pts += pkt->get_duration();
