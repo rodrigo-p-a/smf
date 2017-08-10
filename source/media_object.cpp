@@ -69,10 +69,14 @@ void media_object::stop()
         {
             if( _source )
             {
+                _running = false;
                 _source->stop();
+                _thread.join();
             }
             else
             {
+                _running = false;
+
                 _filter->stop();
 
                 {
@@ -84,10 +88,9 @@ void media_object::stop()
                     unique_lock<recursive_mutex> queueGuard( _queueLock );
                     _queueCond.notify_one();
                 }
-            }
 
-            _running = false;
-            _thread.join();
+                _thread.join();
+            }
         }
         catch(exception& ex)
         {
