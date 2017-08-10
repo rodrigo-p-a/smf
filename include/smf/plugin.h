@@ -20,8 +20,8 @@ public:
     CK_API virtual std::list<cppkit::ck_string> get_source_names() = 0;
     CK_API virtual std::list<cppkit::ck_string> get_filter_names() = 0;
 
-    CK_API virtual std::shared_ptr<source> create_source( const cppkit::ck_string& name ) = 0;
-    CK_API virtual std::shared_ptr<filter> create_filter( const cppkit::ck_string& name ) = 0;
+    CK_API virtual std::shared_ptr<source> create_source( const cppkit::ck_string& name ) const = 0;
+    CK_API virtual std::shared_ptr<filter> create_filter( const cppkit::ck_string& name ) const = 0;
 };
 
 }

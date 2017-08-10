@@ -24,17 +24,40 @@ media_object::media_object() :
 {
 }
 
+media_object::~media_object() throw()
+{
+    stop();
+
+    // This should never happen really... It's sort of a last ditch effort to clean up a
+    // media object as much as we can when something is going wrong...
+    if(_thread.joinable())
+    {
+        CK_LOG_ERROR("stop() has been called but media object thread is still joinable!");
+        _running = false;
+        _thread.join();
+    }
+}
+
 void media_object::run()
 {
     if( !_running )
     {
-        _running = true;
+        try
+        {
+            // Note: we give our filter a chance to run() prior to starting our thread and
+            // setting our state flag because run() can throw.
+            if( _source )
+                _source->run();
+            else _filter->run();
 
-        if( _source )
-            _source->run();
-        else _filter->run();
-
-        _thread = thread( &media_object::entry_point, this );
+            _running = true;
+            _thread = thread( &media_object::entry_point, this );
+        }
+        catch(exception& ex)
+        {
+            _errorState = true;
+            CK_LOG_STD_EXCEPTION(ex);
+        }
     }
 }
 
@@ -42,47 +65,70 @@ void media_object::stop()
 {
     if( _running )
     {
-        _running = false;
-
-        if( _source )
+        try
         {
-            _source->stop();
-        }
-        else
-        {
-            _filter->stop();
-
+            if( _source )
             {
-                unique_lock<recursive_mutex> g( _producerLock );
-                _producerCond.notify_one();
+                _source->stop();
+            }
+            else
+            {
+                _filter->stop();
+
+                {
+                    unique_lock<recursive_mutex> g( _producerLock );
+                    _producerCond.notify_one();
+                }
+
+                {
+                    unique_lock<recursive_mutex> queueGuard( _queueLock );
+                    _queueCond.notify_one();
+                }
             }
 
-            {
-                unique_lock<recursive_mutex> queueGuard( _queueLock );
-                _queueCond.notify_one();
-            }
+            _running = false;
+            _thread.join();
         }
-
-        _thread.join();
+        catch(exception& ex)
+        {
+            _errorState = true;
+            CK_LOG_STD_EXCEPTION(ex);
+        }
     }
 }
 
 void media_object::set_param( const ck_string& name, const ck_string& val )
 {
-    if( _source )
-        _source->set_param( name, val );
+    try
+    {
+        if( _source )
+            _source->set_param( name, val );
 
-    if( _filter )
-        _filter->set_param( name, val );
+        if( _filter )
+            _filter->set_param( name, val );
+    }
+    catch(exception& ex)
+    {
+        _errorState = true;
+        CK_LOG_STD_EXCEPTION(ex);
+    }
 }
 
 void media_object::commit_params()
 {
-    if( _source )
-        _source->commit_params();
+    try
+    {
+        if( _source )
+            _source->commit_params();
 
-    if( _filter )
-        _filter->commit_params();
+        if( _filter )
+            _filter->commit_params();
+    }
+    catch(exception& ex)
+    {
+        _errorState = true;
+        CK_LOG_STD_EXCEPTION(ex);
+    }
 }
 
 void media_object::write( shared_ptr<av_packet> pkt )

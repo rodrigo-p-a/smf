@@ -61,12 +61,12 @@ plugin_factory::plugin_factory( const ck_string& pluginDir ) :
     }
 }
 
-shared_ptr<source> plugin_factory::create_source( const ck_string& name )
+shared_ptr<source> plugin_factory::create_source( const ck_string& name ) const
 {
-    return _sourcePluginMap[name]->create_source( name );
+    return _sourcePluginMap.at(name)->create_source( name );
 }
 
-shared_ptr<filter> plugin_factory::create_filter( const ck_string& name )
+shared_ptr<filter> plugin_factory::create_filter( const ck_string& name ) const
 {
-    return _filterPluginMap[name]->create_filter( name );
+    return _filterPluginMap.at(name)->create_filter( name );
 }
