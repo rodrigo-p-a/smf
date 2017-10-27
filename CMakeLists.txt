@@ -6,7 +6,9 @@ set(SOURCES source/control.cpp
             source/plugin_factory.cpp
             source/plugin.cpp
             source/plugins/avkit_decoder/avkit_decoder.cpp
-	    source/plugins/avkit_rtsp_source/avkit_rtsp_source.cpp)
+            source/plugins/avkit_demux_source/avkit_demux_source.cpp
+            source/plugins/quartz/quartz.cpp
+	        source/plugins/avkit_rtsp_source/avkit_rtsp_source.cpp)
 
 set(COMMON_LIBS cppkit avkit)
 
