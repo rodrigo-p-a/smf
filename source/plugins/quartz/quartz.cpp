@@ -8,13 +8,14 @@ using namespace smf;
 using namespace cppkit;
 using namespace avkit;
 using namespace std;
-
-static const int DROPPED_HEALTHY_THRESHOLD = 2;
+using namespace std::chrono;
 
 quartz::quartz() :
-    _params(),
-    _timeBaseNum(0),
-    _timeBaseDen(0)
+    _freq(0),
+    _firstAfterRun(false),
+    _runStartTime(),
+    _streamTime(),
+    _lastPTS(-1)
 {
 }
 
@@ -22,24 +23,41 @@ quartz::~quartz() throw()
 {
 }
 
+void quartz::run()
+{
+    _firstAfterRun = true;
+}
+
+void quartz::stop()
+{
+    _firstAfterRun = false;
+}
+
 shared_ptr<av_packet> quartz::process( shared_ptr<av_packet> pkt )
 {
-    auto f = (float)_timeBaseNum / (float)_timeBaseDen;
+    if(_firstAfterRun)
+    {
+        _freq = pkt->get_ts_freq();
+        _runStartTime = steady_clock::now();
+        _streamTime = milliseconds();
+        _firstAfterRun = false;
+    }
 
-    ck_usleep((uint32_t)(f * 1000000));
+    auto pts = pkt->get_pts();
+
+    if(_lastPTS != -1)
+    {
+        _streamTime += milliseconds((int)(((double)(pts - _lastPTS) / (double)_freq) * 1000));
+        
+        auto then = _runStartTime + _streamTime;
+
+        auto now = steady_clock::now();
+        
+        if(then > now)
+            ck_usleep(duration_cast<microseconds>(then - now).count());
+    }
+        
+    _lastPTS = pts;
 
     return pkt;
-}
-
-void quartz::set_param( const cppkit::ck_string& name, const cppkit::ck_string& val )
-{
-    if( _params.find( name ) == _params.end() )
-        _params.insert( make_pair( name, val ) );
-    else _params[name] = val;
-}
-
-void quartz::commit_params()
-{
-    _timeBaseNum = _params["time_base_num"].to_int();
-    _timeBaseDen = _params["time_base_den"].to_int();
 }
