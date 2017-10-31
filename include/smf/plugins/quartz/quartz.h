@@ -20,15 +20,15 @@ public:
     CK_API virtual void run();
     CK_API virtual void stop();
 
-    CK_API virtual std::shared_ptr<avkit::av_packet> process( std::shared_ptr<avkit::av_packet> pkt );
+    CK_API virtual std::shared_ptr<avkit::av_packet> process(std::shared_ptr<avkit::av_packet> pkt);
 
-    CK_API virtual void set_param( const cppkit::ck_string& name, const cppkit::ck_string& val ) {}
+    CK_API virtual void set_param(const cppkit::ck_string& name, const cppkit::ck_string& val) {}
     CK_API virtual void commit_params() {}
 
 private:
     uint32_t _freq;
-    bool _firstAfterRun;
-    std::chrono::steady_clock::time_point _runStartTime;
+    bool _reset;
+    std::chrono::steady_clock::time_point _baseTime;
     std::chrono::milliseconds _streamTime;
     int64_t _lastPTS;
 };
