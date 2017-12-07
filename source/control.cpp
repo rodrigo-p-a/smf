@@ -8,7 +8,8 @@ using namespace std;
 control::control() :
     stateful(),
     _elementIndex(),
-    _elements()
+    _elements(),
+    _kvs()
 {
 }
 
@@ -87,4 +88,20 @@ bool control::healthy() const
             healthy = false;
     }
     return healthy;
+}
+
+void control::set_kv( const ck_string& key, const ck_string& val )
+{
+    _kvs[key.to_std_string()] = val;
+}
+
+ck_nullable<ck_string> control::get_kv( const ck_string& key ) const
+{
+    ck_nullable<ck_string> result;
+
+    auto f = _kvs.find(key.to_std_string());
+    if(f != _kvs.end())
+        result.set_value(f->second);
+
+    return result;
 }
