@@ -7,6 +7,7 @@
 #include "smf/filter.h"
 
 #include "cppkit/ck_string.h"
+#include "cppkit/ck_nullable.h"
 #include <memory>
 #include <list>
 #include <map>
@@ -38,9 +39,13 @@ public:
 
     CK_API bool healthy() const;
 
+    CK_API void set_kv( const cppkit::ck_string& key, const cppkit::ck_string& val );
+    CK_API cppkit::ck_nullable<cppkit::ck_string> get_kv( const cppkit::ck_string& key ) const;
+
 private:
     std::map<std::string,std::shared_ptr<media_object> > _elementIndex;
     std::list<std::shared_ptr<media_object> > _elements;
+    std::map<std::string, cppkit::ck_string> _kvs;
 };
 
 }
